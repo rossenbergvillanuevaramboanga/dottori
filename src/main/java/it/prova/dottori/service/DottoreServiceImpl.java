@@ -3,11 +3,13 @@ package it.prova.dottori.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import it.prova.dottori.model.Dottore;
 import it.prova.dottori.repository.DottoreRepository;
 
+@Service
 public class DottoreServiceImpl implements DottoreService {
 
 	@Autowired
@@ -63,9 +65,15 @@ public class DottoreServiceImpl implements DottoreService {
 	}
 
 	@Transactional(readOnly = true)
-	public Dottore findByCodicedottore(Dottore string) {
+	public Dottore findByCodicedottore(String string) {
 		// TODO Auto-generated method stub
-		return repository.findByCodicedottore(string).orElse(null);
+		return repository.findByCodiceDottore(string).orElse(null);
+	}
+
+	@Transactional(readOnly = true)
+	public Dottore findByCodicefiscalepaziente(String codiceFiscalePaziente) {
+		// TODO Auto-generated method stub
+		return repository.findByCodiceFiscalePaziente(codiceFiscalePaziente).orElse(null);
 	}
 
 }

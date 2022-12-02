@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import it.prova.dottori.dto.DottoreDTO;
 import it.prova.dottori.model.Dottore;
 import it.prova.dottori.service.DottoreService;
+import it.prova.dottori.web.api.exception.DottoreInVisitaException;
 import it.prova.dottori.web.api.exception.DottoreNotFoundException;
+import it.prova.dottori.web.api.exception.DottoreNotInServizioException;
 import it.prova.dottori.web.api.exception.IdNotNullForInsertException;
 
 @RestController
@@ -43,9 +45,25 @@ public class DottoreController {
 	}
 
 	@GetMapping("/{id}")
-	public DottoreDTO findById(@PathVariable(value = "id", required = true) Long idDottore) {
+	public DottoreDTO findById(@PathVariable(value = "id", required = true) Long id) {
+		
+		Dottore dottore = dottoreService.caricaSingoloElemento(id);
 
-		return DottoreDTO.buildDottoreDTOModel(dottoreService.caricaSingoloElemento(idDottore));
+		if (dottore == null)
+			throw new DottoreNotFoundException("Dottore not found con id: " + id);
+
+		return DottoreDTO.buildDottoreDTOModel(dottore);
+	}
+	
+	@GetMapping("/find/{codicefiscale}")
+	public DottoreDTO findByCodiceFiscalePaziente(@PathVariable(value = "codicefiscale", required = true) String codicefiscale) {
+		
+		Dottore dottore = dottoreService.findByCodicefiscalepaziente(codicefiscale);
+
+		if (dottore == null)
+			throw new DottoreNotFoundException("Dottore not found con paziente: " + codicefiscale);
+
+		return DottoreDTO.buildDottoreDTOModel(dottore);
 	}
 
 	@GetMapping
@@ -58,7 +76,7 @@ public class DottoreController {
 		Dottore dottore = dottoreService.caricaSingoloElemento(id);
 
 		if (dottore == null)
-			throw new DottoreNotFoundException("Utente not found con id: " + id);
+			throw new DottoreNotFoundException("Dottore not found con id: " + id);
 
 		dottoreInput.setId(id);
 		Dottore dottoreAggiornato = dottoreService.aggiorna(dottoreInput.buildDottoreModel());
@@ -70,8 +88,65 @@ public class DottoreController {
 	public void delete(@PathVariable(required = true) Long id) {
 		Dottore dottore = dottoreService.caricaSingoloElemento(id);
 		if (dottore == null)
-			throw new DottoreNotFoundException("Utente not found con id: " + id);
+			throw new DottoreNotFoundException("Dottore not found con id: " + id);
 		dottoreService.rimuovi(dottore);
+	}
+	
+	@GetMapping("/verifica/{codicedottore}")
+	public DottoreDTO findByCodiceDottore(@PathVariable(value = "codicedottore", required = true) String codicedottore) {
+		
+		Dottore dottore = dottoreService.findByCodicedottore(codicedottore);
+
+		if (dottore == null)
+			throw new DottoreNotFoundException("Dottore not found con codice: " + codicedottore);
+		
+		if (dottore.getInServizio() == false)
+			throw new DottoreNotInServizioException("Dottore Not InServizio con codice: " + codicedottore);
+		
+		if (dottore.getInVisita() == true || dottore.getCodiceFiscalePaziente() != null)
+			throw new DottoreInVisitaException("Dottore Not InServizio con codice: " + codicedottore);
+		
+		dottore.setId(null);
+		return DottoreDTO.buildDottoreDTOModel(dottore);
+	}
+	
+	//TODO impostaInVista e terminaVisita
+	@PostMapping("/impostaInVisita")
+	public DottoreDTO impostaInVisita(@Valid @RequestBody DottoreDTO dottoreInput) {
+		
+		Dottore dottore = dottoreService.findByCodicedottore(dottoreInput.getCodiceDottore());
+
+		if (dottore == null)
+			throw new DottoreNotFoundException("Dottore not found con Codice Dottore: " + dottoreInput.getCodiceDottore());
+		
+		if (dottore.getInServizio() == false)
+			throw new DottoreNotInServizioException("Dottore Not InServizio con codice: " + dottoreInput.getCodiceDottore());
+		
+		if (dottore.getInVisita() == true || dottore.getCodiceFiscalePaziente() != null)
+			throw new DottoreInVisitaException("Dottore Not InServizio con codice: " + dottoreInput.getCodiceDottore());
+		
+		dottore.setCodiceFiscalePaziente(dottoreInput.getCodiceFiscalePaziente());
+		dottore.setInVisita(true);
+		
+		Dottore dottoreAggiornato = dottoreService.aggiorna(dottore);
+		return DottoreDTO.buildDottoreDTOModel(dottoreAggiornato);
+	}
+	
+	@PostMapping("/terminaVisita")
+	public DottoreDTO terminaVisita(@Valid @RequestBody DottoreDTO dottoreInput) {
+		
+		Dottore dottore = dottoreService.findByCodicefiscalepaziente(dottoreInput.getCodiceFiscalePaziente());
+		
+		//Modificare Exception
+		if (dottore == null)
+			throw new DottoreNotFoundException("Non esiste dottore con il paziente: " + dottoreInput.getCodiceFiscalePaziente());
+		
+		dottore.setCodiceFiscalePaziente(null);
+		dottore.setInVisita(null);
+		
+		Dottore dottoreAggiornato = dottoreService.aggiorna(dottore);
+		return DottoreDTO.buildDottoreDTOModel(dottoreAggiornato);
+		
 	}
 
 }

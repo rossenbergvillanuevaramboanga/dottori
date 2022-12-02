@@ -10,10 +10,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+@ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@Override
@@ -35,7 +37,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
 	// IdNotNullForInsertException
 	@ExceptionHandler(IdNotNullForInsertException.class)
-	public ResponseEntity<Object> handleTavoloNotFoundException(IdNotNullForInsertException ex, WebRequest request) {
+	public ResponseEntity<Object> handleIdNotNullForInsertException(IdNotNullForInsertException ex, WebRequest request) {
 
 		Map<String, Object> body = new LinkedHashMap<>();
 		body.put("timestamp", LocalDateTime.now());
@@ -46,7 +48,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 	
 	// DottoreNotFoundException
-	
+	@ExceptionHandler(DottoreNotFoundException.class)
 	public ResponseEntity<Object> handleDottoreNotFoundException(DottoreNotFoundException ex, WebRequest request) {
 
 		Map<String, Object> body = new LinkedHashMap<>();
@@ -55,6 +57,30 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 		body.put("status", HttpStatus.NOT_FOUND);
 
 		return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+	}
+	
+	//DottoreNotInServizioException
+	@ExceptionHandler(DottoreNotInServizioException.class)
+	public ResponseEntity<Object> handleDottoreNotInServizioException(DottoreNotInServizioException ex, WebRequest request) {
+
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("timestamp", LocalDateTime.now());
+		body.put("message", ex.getMessage());
+		body.put("status", HttpStatus.FORBIDDEN);
+
+		return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+	}
+	
+	//DottoreInVisitaException
+	@ExceptionHandler(DottoreInVisitaException.class)
+	public ResponseEntity<Object> handleDottoreInVisitaException(DottoreInVisitaException ex, WebRequest request) {
+
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("timestamp", LocalDateTime.now());
+		body.put("message", ex.getMessage());
+		body.put("status", HttpStatus.FORBIDDEN);
+
+		return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
 	}
 	
 

@@ -17,6 +17,8 @@ public interface DottoreService {
 
 	public void rimuovi(Dottore dottoreInstance);
 
-	public Dottore findByCodicedottore(Dottore string);
+	public Dottore findByCodicedottore(String string);
+
+	public Dottore findByCodicefiscalepaziente(String codiceFiscalePaziente);
 
 }

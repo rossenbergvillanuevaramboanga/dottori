@@ -6,17 +6,19 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import it.prova.dottori.model.Dottore;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DottoreDTO {
 
 	private Long id;
 
-	@NotBlank(message = "{dottore.nome.notblank}")
 	private String nome;
-	@NotBlank(message = "{dottore.cognome.notblank}")
+	
 	private String cognome;
-	@NotBlank(message = "{dottore.codicedottore.notblank}")
+	
 	private String codiceDottore;
 
 	private String codiceFiscalePaziente;
